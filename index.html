@@ -32,6 +32,9 @@
     <div class="video-grid" id="videoList">
       <!-- 動画一覧をここに表示 -->
     </div>
+  <h2>AIによるおすすめ動画</h2>
+  <p>あなたの視聴履歴から、Gemini AIが動画を提案します。</p>
+  <button onclick="fetchRecommendations()">おすすめを取得</button>
   </main>
 
   <script type="module">
@@ -71,6 +74,18 @@
         });
       }
     });
+
+// AIgenereting for osusume
+     async function fetchRecommendations() {
+      const res = await fetch("https://script.google.com/macros/s/AKfycby9jOq0oswRtRV9AFdchGXOUUhxHecSXGzaxr8nb5czO_YwukNSYZLiIhFn6L5Wiyk9/exec", {
+        method: "POST",
+        body: JSON.stringify({ prompt: "猫動画、料理動画、教育系" })
+      });
+      const data = await res.json();
+      const suggestions = data.candidates?.[0]?.content?.parts?.[0]?.text || "取得失敗";
+      document.getElementById("results").innerHTML =
+        suggestions.split("\n").map(item => `<div class="rec-item">${item}</div>`).join("");
+    }
   </script>
 </body>
 </html>
