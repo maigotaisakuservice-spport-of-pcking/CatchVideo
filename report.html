@@ -13,7 +13,7 @@
 <body>
   <h1>動画を報告する</h1>
   <form id="reportForm">
-    <label>動画ID</label>
+    <label>報告する動画のリンク</label>
     <input type="text" id="videoId" required />
     <label>報告理由</label>
     <select id="reason">
@@ -24,6 +24,13 @@
     </select>
     <label>詳細（任意）</label>
     <textarea id="detail" rows="4"></textarea>
+
+        <div id="signature-area">
+            <input type="checkbox" id="agreement-checkbox" required>
+            <label for="agreement-checkbox">
+                <strong>この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、これを誓います。</strong>
+            </label>
+        </div>
     <button type="submit">報告する</button>
   </form>
 
@@ -37,18 +44,58 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+// ipaddres 取得
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
 
-    document.getElementById("reportForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const videoId = document.getElementById("videoId").value;
-      const reason = document.getElementById("reason").value;
-      const detail = document.getElementById("detail").value;
-      await addDoc(collection(db, "reports"), {
-        videoId, reason, detail, time: serverTimestamp()
-      });
-      alert("報告を送信しました。ご協力ありがとうございます。");
-      location.href = "index.html";
-    });
+// フォームの送信イベントを処理
+document.getElementById('report-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); // デフォルトの送信をキャンセル
+
+    const user = auth.currentUser;
+    if (!user) {
+        alert("報告するにはログインが必要です。");
+        return;
+    }
+
+    if (!document.getElementById('agreement-checkbox').checked) {
+        alert("チェックボックスにチェックを入れてください。");
+        return;
+    }
+
+    // フォームからデータを取得
+    const reportedVideoId = document.getElementById('video-id').value;
+    const reason = document.getElementById('reason').value;
+    const comments = document.getElementById('comments').value;
+  　const comments = document.getElementById('data.ip').innerText;
+    const signatureStatement = document.querySelector('#signature-area label').innerText;
+
+    try {
+        // Firestoreにデータを追加
+        await db.collection('violation_reports').add({
+            reportedVideoId: reportedVideoId,
+            reason: reason,
+            comments: comments,
+            reporterUid: user.uid, // ログインしているユーザーのID
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(), // サーバーのタイムスタンプ
+            signature: {
+                version: "1.0",
+                agreedToTerms: true,
+                statement: signatureStatement
+            },
+            status: "pending"
+        });
+
+        alert("ご報告ありがとうございました。内容を確認いたします。");
+        document.getElementById('report-form').reset();
+
+    } catch (error) {
+        console.error("報告の送信中にエラーが発生しました:", error);
+        alert("エラーが発生しました。もう一度お試しください。");
+    }
+});
   </script>
 </body>
 </html>
