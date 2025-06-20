@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>違反報告 - Catch！Video</title>
+  <style>
+    body { font-family: sans-serif; background: #fff; padding: 30px; max-width: 600px; margin: auto; }
+    input, textarea, select, button { width: 100%; margin: 12px 0; padding: 10px; font-size: 1rem; }
+    button { background: crimson; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>動画を報告する</h1>
+  <form id="reportForm">
+    <label>動画ID</label>
+    <input type="text" id="videoId" required />
+    <label>報告理由</label>
+    <select id="reason">
+      <option value="不適切な内容">不適切な内容</option>
+      <option value="著作権侵害">著作権侵害</option>
+      <option value="スパム">スパム</option>
+      <option value="その他">その他</option>
+    </select>
+    <label>詳細（任意）</label>
+    <textarea id="detail" rows="4"></textarea>
+    <button type="submit">報告する</button>
+  </form>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById("reportForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const videoId = document.getElementById("videoId").value;
+      const reason = document.getElementById("reason").value;
+      const detail = document.getElementById("detail").value;
+      await addDoc(collection(db, "reports"), {
+        videoId, reason, detail, time: serverTimestamp()
+      });
+      alert("報告を送信しました。ご協力ありがとうございます。");
+      location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
