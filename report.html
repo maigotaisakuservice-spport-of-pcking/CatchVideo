@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>違反報告 - Catch！Video</title>
   <style>
     body { font-family: sans-serif; background: #fff; padding: 30px; max-width: 600px; margin: auto; }
@@ -15,61 +15,103 @@
   <form id="reportForm">
     <label>報告する動画のリンク (必須)</label>
     <input type="text" id="videoId" required />
+
     <label>報告理由 (必須)</label>
-    <select id="reason">
+    <select id="reason" required>
       <option value="不適切な内容">不適切な内容</option>
       <option value="著作権侵害">著作権侵害</option>
       <option value="スパム">スパム</option>
       <option value="その他">その他</option>
     </select>
-　　    <label>侵害された動画のリンク (必須)</label>
-    <textarea id="Videosownerlink" rows="1"></textarea>
-<br>
-       <label>メールアドレス (必須)</label>
-    <textarea id="mail-address" rows="1"></textarea>
-<br>
+
+    <label>侵害された動画のリンク (必須)</label>
+    <textarea id="videoOwnerLink" rows="1" required></textarea>
+
+    <label>メールアドレス (必須)</label>
+    <textarea id="mailAddress" rows="1" required></textarea>
+
     <label>詳細（任意）</label>
     <textarea id="detail" rows="4"></textarea>
 
-        <div id="signature-area">
-            <label for="agreement-checkbox">
-                <strong>報告ボタンを押し、送信すると、この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、通報ポリシーに同意したこととなります<br>また、この報告は侵害された動画の所有者でない場合は処理されません。</strong>
-            </label>
-        </div>
+    <div id="signature-area">
+      <label>
+        <strong>
+          報告ボタンを押し、送信すると、この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、通報ポリシーに同意したこととなります。
+          <br>また、この報告は侵害された動画の所有者でない場合は処理されません。
+        </strong>
+      </label>
+    </div>
+
     <button type="submit">報告する</button>
   </form>
 
   <script type="module">
-    
-// ipaddres 取得
-    fetch('https://api.ipify.org?format=json')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
-
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
       authDomain: "catch--video.firebaseapp.com",
       projectId: "catch--video"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    const reportedVideoId = document.getElementById('video-id').value;
-    const VideoOwnerlink = document.getElementById('Videosownerlink').value;
-    const reason = document.getElementById('reason').value;
-    const comments = document.getElementById('comments').value;
-  　const dataip = document.getElementById('ip-address').innerText;
-    const signatureStatement = document.querySelector('#signature-area label').innerText;
-    const mailaddress = document.getElementById('mail-address').innerText;
-      await addDoc(collection(db, "reports"), {
-        reportedVideoId, VideoOwnerlink, reason, comments, dataip, signatureStatement, mailaddress, time: serverTimestamp()
-      });
-      alert("報告を送信しました。ご協力ありがとうございます。");
-      location.href = "index.html";
+    let currentUserUid = null;
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUserUid = user.uid;
+      } else {
+        alert("ログインしてから報告してください。");
+        location.href = "login.html"; // 未ログイン時にログイン画面へ
+      }
+    });
+
+    const form = document.getElementById("reportForm");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const videoId = document.getElementById("videoId").value;
+      const reason = document.getElementById("reason").value;
+      const videoOwnerLink = document.getElementById("videoOwnerLink").value;
+      const mailAddress = document.getElementById("mailAddress").value;
+      const detail = document.getElementById("detail").value;
+      const signatureStatement = document.querySelector('#signature-area label').innerText;
+
+      // IPアドレス取得
+      let ipAddress = "";
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        ipAddress = ipData.ip;
+      } catch (err) {
+        ipAddress = "取得失敗";
+      }
+
+      try {
+        await addDoc(collection(db, "reports"), {
+          videoId,
+          reason,
+          videoOwnerLink,
+          mailAddress,
+          detail,
+          ipAddress,
+          signatureStatement,
+          userUid: currentUserUid,
+          timestamp: serverTimestamp()
+        });
+
+        alert("報告を送信しました。ご協力ありがとうございます。");
+        location.href = "index.html";
+      } catch (error) {
+        console.error("報告送信エラー:", error);
+        alert("報告送信に失敗しました。もう一度お試しください。");
+      }
     });
   </script>
 </body>
