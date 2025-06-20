@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ライブ配信一覧 - Catch！Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    .stream { border: 1px solid #ccc; border-radius: 8px; padding: 10px; margin: 10px 0; background: white; display: flex; gap: 15px; align-items: center; }
+    .stream img { width: 120px; border-radius: 6px; }
+    .info h2 { margin: 0 0 5px; font-size: 18px; }
+    .info .channel { color: #888; font-size: 14px; }
+    .live-badge { color: red; font-weight: bold; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>現在配信中のライブ</h1>
+  <div id="stream-list">読み込み中...</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadStreams() {
+      const listEl = document.getElementById("stream-list");
+      listEl.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "liveStreams"));
+      if (querySnapshot.empty) {
+        listEl.innerText = "現在ライブ配信中の動画はありません。";
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data.isLive) return; // 配信中のみ表示
+        const html = `
+          <div class="stream">
+            <img src="${data.thumbnail || 'default.jpg'}" alt="Thumbnail">
+            <div class="info">
+              <h2>${data.title} <span class="live-badge">LIVE</span></h2>
+              <div class="channel">${data.channelName || "匿名"}</div>
+              <a href="/watch.html?id=${doc.id}">視聴する</a>
+            </div>
+          </div>
+        `;
+        listEl.innerHTML += html;
+      });
+    }
+
+    loadStreams();
+  </script>
+</body>
+</html>
