@@ -54,7 +54,7 @@
         document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
 
 // フォームの送信イベントを処理
-document.getElementById('report-form').addEventListener('submit', async (e) => {
+document.getElementById('reportForm').addEventListener('submit', async (e) => {
     e.preventDefault(); // デフォルトの送信をキャンセル
 
     const user = auth.currentUser;
