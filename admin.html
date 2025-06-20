@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>管理者ダッシュボード - Catch！Video</title>
+  <style>
+    body { font-family: sans-serif; background: #fafafa; margin: 0; }
+    header { background: #111; color: #fff; padding: 16px; }
+    main { padding: 20px; max-width: 960px; margin: auto; }
+    section { background: #fff; padding: 16px; margin-bottom: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #ccc; text-align: left; }
+    .ban { background: crimson; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>管理者ダッシュボード</h1>
+  </header>
+  <main>
+    <section>
+      <h2>ユーザー一覧</h2>
+      <table id="userTable">
+        <tr><th>UID</th><th>メール</th><th>状態</th><th>操作</th></tr>
+        <!-- JSで生成 -->
+      </table>
+    </section>
+
+    <section>
+      <h2>報告された動画</h2>
+      <table id="reportTable">
+        <tr><th>動画ID</th><th>理由</th><th>操作</th></tr>
+        <!-- JSで生成 -->
+      </table>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadUsers() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      const table = document.getElementById("userTable");
+      usersSnap.forEach(docu => {
+        const d = docu.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${docu.id}</td><td>${d.email}</td><td>${d.status || "active"}</td>
+        <td><button class="ban" onclick="banUser('${docu.id}')">利用停止</button></td>`;
+        table.appendChild(row);
+      });
+    }
+
+    async function loadReports() {
+      const reportsSnap = await getDocs(collection(db, "reports"));
+      const table = document.getElementById("reportTable");
+      reportsSnap.forEach(r => {
+        const d = r.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${d.videoId}</td><td>${d.reason}</td>
+        <td><button class="ban" onclick="deleteVideo('${d.videoId}')">動画削除</button></td>`;
+        table.appendChild(row);
+      });
+    }
+
+    window.banUser = async (uid) => {
+      await updateDoc(doc(db, "users", uid), { status: "banned" });
+      alert("ユーザーを停止しました");
+      location.reload();
+    };
+
+    window.deleteVideo = async (id) => {
+      await deleteDoc(doc(db, "videos", id));
+      alert("動画を削除しました");
+      location.reload();
+    };
+
+    loadUsers();
+    loadReports();
+  </script>
+</body>
+</html>
