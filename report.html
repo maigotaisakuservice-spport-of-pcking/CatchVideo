@@ -22,13 +22,16 @@
       <option value="スパム">スパム</option>
       <option value="その他">その他</option>
     </select>
+　　    <label>侵害された動画のリンク</label>
+    <textarea id="Videosownerlink" rows="4"></textarea>
+<br>
     <label>詳細（任意）</label>
     <textarea id="detail" rows="4"></textarea>
 
         <div id="signature-area">
             <input type="checkbox" id="agreement-checkbox" required>
             <label for="agreement-checkbox">
-                <strong>この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、これを誓います。</strong>
+                <strong>この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、これを誓います。<br>また、この報告は侵害された動画の所有者でない場合は処理されないことを確認しました。</strong>
             </label>
         </div>
     <button type="submit">報告する</button>
@@ -67,6 +70,7 @@ document.getElementById('report-form').addEventListener('submit', async (e) => {
 
     // フォームからデータを取得
     const reportedVideoId = document.getElementById('video-id').value;
+    const reason = document.getElementById('Videosownerlink').value;
     const reason = document.getElementById('reason').value;
     const comments = document.getElementById('comments').value;
   　const comments = document.getElementById('data.ip').innerText;
