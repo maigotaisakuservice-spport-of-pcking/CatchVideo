@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catch！Video - ホーム</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+    header { background: #1f1f1f; color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    header nav a { color: #ccc; margin-left: 20px; text-decoration: none; }
+    header nav a:hover { color: #fff; }
+    main { padding: 24px; max-width: 1200px; margin: auto; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: #fff; padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card img { width: 100%; border-radius: 6px; height: 160px; object-fit: cover; }
+    .card h3 { font-size: 1rem; margin: 10px 0 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Catch！Video</h1>
+    <nav>
+      <a href="upload.html">動画を投稿</a>
+      <a href="mypage.html">マイチャンネル</a>
+      <a href="#" id="logoutBtn">ログアウト</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>おすすめ動画</h2>
+    <div class="video-grid" id="videoList">
+      <!-- 動画一覧をここに表示 -->
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video",
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    document.getElementById("logoutBtn").onclick = () => {
+      signOut(auth).then(() => location.href = "login.html");
+    };
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        alert("ログインが必要です");
+        location.href = "login.html";
+      } else {
+        const querySnapshot = await getDocs(collection(db, "videos"));
+        const videoList = document.getElementById("videoList");
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <img src="${data.thumbnail}" alt="thumb">
+            <h3>${data.title}</h3>
+          `;
+          videoList.appendChild(card);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
