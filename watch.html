@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>動画を見る - Catch！Video</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; margin: 0; }
+    .player { max-width: 960px; margin: 24px auto; background: #fff; padding: 20px; border-radius: 8px; }
+    video { width: 100%; border-radius: 6px; }
+    h2 { margin-top: 16px; }
+    p { color: #444; }
+  </style>
+</head>
+<body>
+  <div class="player">
+    <video id="videoPlayer" controls></video>
+    <h2 id="videoTitle">タイトル</h2>
+    <p id="videoDesc">説明</p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(location.search);
+    const videoId = params.get("videoId");
+
+    if (!videoId) {
+      alert("動画が指定されていません");
+      location.href = "index.html";
+    }
+
+    const docRef = doc(db, "videos", videoId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById("videoPlayer").src = data.videoURL;
+      document.getElementById("videoTitle").textContent = data.title;
+      document.getElementById("videoDesc").textContent = data.desc || "";
+    } else {
+      alert("動画が見つかりません");
+      location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
