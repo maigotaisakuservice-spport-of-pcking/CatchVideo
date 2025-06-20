@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ライブラリ - Catch！Video</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { color: #0099cc; }
+    .video-list { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+    .video-item { border: 1px solid #ccc; padding: 10px; border-radius: 8px; background: #f8f8f8; }
+  </style>
+</head>
+<body>
+  <h1>ライブラリ</h1>
+  <h2>お気に入り動画</h2>
+  <div class="video-list" id="favorites"></div>
+
+  <h2>視聴履歴</h2>
+  <div class="video-list" id="history"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    const firebaseConfig = { /* 省略、app.js による読み込み推奨 */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    const uid = auth.currentUser?.uid;
+
+    async function loadLibrary() {
+      if (!uid) return alert("ログインが必要です");
+
+      const favRef = collection(db, "users", uid, "favorites");
+      const favSnap = await getDocs(favRef);
+      const favContainer = document.getElementById("favorites");
+
+      favSnap.forEach(doc => {
+        const data = doc.data();
+        favContainer.innerHTML += `<div class="video-item">${data.title}</div>`;
+      });
+
+      const histRef = collection(db, "users", uid, "history");
+      const histSnap = await getDocs(histRef);
+      const histContainer = document.getElementById("history");
+
+      histSnap.forEach(doc => {
+        const data = doc.data();
+        histContainer.innerHTML += `<div class="video-item">${data.title}</div>`;
+      });
+    }
+
+    loadLibrary();
+  </script>
+</body>
+</html>
