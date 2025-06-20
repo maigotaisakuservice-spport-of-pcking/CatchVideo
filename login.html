@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Catch！Video - ログイン</title>
+<style>
+  body { font-family: Arial,sans-serif; background:#f0f0f0; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;}
+  .container { background:#fff; padding:24px; border-radius:8px; width:320px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+  h1 { text-align:center; margin-bottom:24px;}
+  input { width:100%; padding:10px; margin-bottom:12px; border-radius:4px; border:1px solid #ccc; font-size:1em;}
+  button { width:100%; padding:12px; background:#007bff; border:none; color:#fff; border-radius:4px; cursor:pointer; font-weight:bold;}
+  button:hover { background:#0056b3;}
+  .google-btn { background:#de5246; margin-top:12px;}
+  .google-btn:hover { background:#a83227;}
+  p { text-align:center; margin-top:16px;}
+  a { color:#007bff; text-decoration:none;}
+  a:hover { text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>ログイン</h1>
+  <input type="email" id="email" placeholder="メールアドレス" required />
+  <input type="password" id="password" placeholder="パスワード" required />
+  <button id="emailLoginBtn">メールでログイン</button>
+  <button id="googleLoginBtn" class="google-btn">Googleでログイン</button>
+  <p>アカウントがない？ <a href="register.html">新規登録はこちら</a></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+  authDomain: "catch--video.firebaseapp.com",
+  projectId: "catch--video",
+  storageBucket: "catch--video.firebasestorage.app",
+  messagingSenderId: "252815636201",
+  appId: "1:252815636201:web:d4da3b738a0e536211e278",
+  measurementId: "G-C73B0V1RLN"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.getElementById('emailLoginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("ログイン成功");
+    location.href = "index.html";
+  } catch (e) {
+    alert("ログイン失敗: " + e.message);
+  }
+});
+
+document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    alert("Googleログイン成功");
+    location.href = "index.html";
+  } catch (e) {
+    alert("Googleログイン失敗: " + e.message);
+  }
+});
+</script>
+</body>
+</html>
