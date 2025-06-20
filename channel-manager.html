@@ -2,54 +2,65 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>チャンネル管理 - Catch！Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    input, textarea, button { display: block; width: 100%; padding: 10px; margin-top: 10px; }
-    button { background: #0099cc; color: white; border: none; border-radius: 5px; }
+    input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; }
+    button { background: #0099cc; color: white; border: none; padding: 10px 20px; border-radius: 5px; }
   </style>
 </head>
 <body>
-  <h1>チャンネル作成・管理</h1>
+  <h1>チャンネル詳細設定</h1>
 
   <label>チャンネル名</label>
-  <input type="text" id="channelName" />
+  <input type="text" id="name" />
 
   <label>説明</label>
-  <textarea id="channelDesc"></textarea>
+  <textarea id="desc"></textarea>
 
-  <button onclick="saveChannel()">保存</button>
+  <label>アイコン画像URL</label>
+  <input type="text" id="iconURL" placeholder="https://..." />
+
+  <label>グッズ販売リンク</label>
+  <input type="url" id="goodsURL" placeholder="https://yourshop.example.com" />
+
+  <label>外部リンク</label>
+  <input type="url" id="externalLink" placeholder="https://yourblog.example.com" />
+
+  <button onclick="save()">保存</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-    const firebaseConfig = {  apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+    const firebaseConfig = {apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
   authDomain: "catch--video.firebaseapp.com",
   projectId: "catch--video",
   storageBucket: "catch--video.firebasestorage.app",
   messagingSenderId: "252815636201",
   appId: "1:252815636201:web:d4da3b738a0e536211e278",
-  measurementId: "G-C73B0V1RLN"
-};
+  measurementId: "G-C73B0V1RLN"};
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
 
-    async function saveChannel() {
+    async function save() {
       const user = auth.currentUser;
       if (!user) return alert("ログインしてください");
 
-      const name = document.getElementById("channelName").value;
-      const desc = document.getElementById("channelDesc").value;
-
-      await setDoc(doc(db, "channels", user.uid), {
-        name, desc, updatedAt: new Date().toISOString()
+      const ref = doc(db, "channels", user.uid);
+      await setDoc(ref, {
+        name: document.getElementById("name").value,
+        desc: document.getElementById("desc").value,
+        iconURL: document.getElementById("iconURL").value,
+        goodsURL: document.getElementById("goodsURL").value,
+        externalLink: document.getElementById("externalLink").value,
+        updatedAt: new Date().toISOString()
       });
 
-      alert("チャンネルを保存しました！");
+      alert("チャンネルを更新しました！");
     }
   </script>
 </body>
