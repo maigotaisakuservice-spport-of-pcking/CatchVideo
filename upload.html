@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catch！Video - 動画投稿</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; margin: 0; padding: 24px; }
+    h1 { margin-bottom: 20px; }
+    form { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, textarea { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 12px; background: #007bff; border: none; color: #fff; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <h1>動画を投稿</h1>
+  <form id="uploadForm">
+    <input type="text" id="title" placeholder="動画タイトル" required />
+    <textarea id="desc" placeholder="説明" rows="4"></textarea>
+    <input type="file" id="videoFile" accept="video/mp4" required />
+    <input type="file" id="thumbnailFile" accept="image/*" required />
+    <button type="submit">アップロード</button>
+  </form>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+      authDomain: "catch--video.firebaseapp.com",
+      projectId: "catch--video",
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        alert("ログインが必要です");
+        location.href = "login.html";
+      } else {
+        currentUser = user;
+      }
+    });
+
+    document.getElementById("uploadForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const desc = document.getElementById("desc").value;
+      const video = document.getElementById("videoFile").files[0];
+      const thumb = document.getElementById("thumbnailFile").files[0];
+
+      const upload = async (file, folder) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("upload_preset", "catchvideo");
+        const res = await fetch(`https://api.cloudinary.com/v1_1/diavopk3r/${folder}/upload`, {
+          method: "POST",
+          body: fd
+        });
+        return (await res.json()).secure_url;
+      };
+
+      const videoURL = await upload(video, "video");
+      const thumbURL = await upload(thumb, "image");
+
+      await addDoc(collection(db, "videos"), {
+        title,
+        desc,
+        videoURL,
+        thumbnail: thumbURL,
+        user: currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+
+      alert("アップロード完了！");
+      location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
