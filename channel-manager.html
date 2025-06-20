@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>チャンネル管理 - Catch！Video</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, textarea, button { display: block; width: 100%; padding: 10px; margin-top: 10px; }
+    button { background: #0099cc; color: white; border: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>チャンネル作成・管理</h1>
+
+  <label>チャンネル名</label>
+  <input type="text" id="channelName" />
+
+  <label>説明</label>
+  <textarea id="channelDesc"></textarea>
+
+  <button onclick="saveChannel()">保存</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    const firebaseConfig = { /* 省略 */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    async function saveChannel() {
+      const user = auth.currentUser;
+      if (!user) return alert("ログインしてください");
+
+      const name = document.getElementById("channelName").value;
+      const desc = document.getElementById("channelDesc").value;
+
+      await setDoc(doc(db, "channels", user.uid), {
+        name, desc, updatedAt: new Date().toISOString()
+      });
+
+      alert("チャンネルを保存しました！");
+    }
+  </script>
+</body>
+</html>
