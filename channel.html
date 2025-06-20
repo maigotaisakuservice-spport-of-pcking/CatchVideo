@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>チャンネル - Catch！Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .channel-info { display: flex; align-items: center; margin-bottom: 20px; }
+    .channel-info img { width: 80px; height: 80px; border-radius: 50%; margin-right: 16px; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .video-card { border: 1px solid #ccc; padding: 10px; border-radius: 8px; background: #f8f8f8; }
+  </style>
+</head>
+<body>
+  <div class="channel-info">
+    <img src="https://placehold.co/80x80" alt="チャンネルアイコン" id="icon" />
+    <div>
+      <h1 id="channelName">チャンネル名</h1>
+      <p id="channelDesc">説明文</p>
+    </div>
+  </div>
+
+  <h2>投稿動画</h2>
+  <div class="video-grid" id="videoList"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    const firebaseConfig = {apiKey: "AIzaSyCionIdr-4M3ZITUlSx8I5i8vmae-c-ldM",
+  authDomain: "catch--video.firebaseapp.com",
+  projectId: "catch--video",
+  storageBucket: "catch--video.firebasestorage.app",
+  messagingSenderId: "252815636201",
+  appId: "1:252815636201:web:d4da3b738a0e536211e278",
+  measurementId: "G-C73B0V1RLN"
+};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // チャンネルID取得（クエリパラメータから）
+    const params = new URLSearchParams(location.search);
+    const channelId = params.get("id");
+
+    async function loadChannel() {
+      if (!channelId) return alert("チャンネルIDがありません");
+
+      const channelRef = doc(db, "channels", channelId);
+      const channelSnap = await getDoc(channelRef);
+      const data = channelSnap.data();
+
+      if (data) {
+        document.getElementById("channelName").textContent = data.name;
+        document.getElementById("channelDesc").textContent = data.desc;
+        document.getElementById("icon").src = data.iconURL || "https://placehold.co/80x80";
+      }
+
+      const q = query(collection(db, "videos"), where("owner", "==", channelId));
+      const res = await getDocs(q);
+      const container = document.getElementById("videoList");
+
+      res.forEach(doc => {
+        const vid = doc.data();
+        container.innerHTML += `<div class="video-card">
+          <strong>${vid.title}</strong><br />
+          <video src="${vid.videoURL}" width="100%" controls></video>
+        </div>`;
+      });
+    }
+
+    loadChannel();
+  </script>
+</body>
+</html>
