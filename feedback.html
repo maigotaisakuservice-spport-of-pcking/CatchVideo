@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ご意見・フィードバック</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 150px; padding: 10px; margin-bottom: 10px; }
+    input, button { padding: 10px; }
+    button { background: #007bff; color: white; border: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>ご意見・ご感想をお聞かせください</h1>
+  <form onsubmit="sendFeedback(event)">
+    <label>フィードバック内容</label><br>
+    <textarea id="feedback" placeholder="改善点やバグ報告などをご自由に"></textarea><br>
+    <input type="text" id="email" placeholder="（任意）連絡用メールアドレス"><br><br>
+    <button type="submit">送信</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    async function sendFeedback(e) {
+      e.preventDefault();
+      const feedback = document.getElementById("feedback").value;
+      const email = document.getElementById("email").value;
+
+      const res = await fetch("YOUR_GAS_ENDPOINT", {
+        method: "POST",
+        body: JSON.stringify({ feedback, email })
+      });
+      const result = await res.text();
+      document.getElementById("status").innerText = "送信しました。ありがとうございました！";
+    }
+  </script>
+</body>
+</html>
