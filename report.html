@@ -13,25 +13,27 @@
 <body>
   <h1>動画を報告する</h1>
   <form id="reportForm">
-    <label>報告する動画のリンク</label>
+    <label>報告する動画のリンク (必須)</label>
     <input type="text" id="videoId" required />
-    <label>報告理由</label>
+    <label>報告理由 (必須)</label>
     <select id="reason">
       <option value="不適切な内容">不適切な内容</option>
       <option value="著作権侵害">著作権侵害</option>
       <option value="スパム">スパム</option>
       <option value="その他">その他</option>
     </select>
-　　    <label>侵害された動画のリンク</label>
-    <textarea id="Videosownerlink" rows="4"></textarea>
+　　    <label>侵害された動画のリンク (必須)</label>
+    <textarea id="Videosownerlink" rows="1"></textarea>
+<br>
+       <label>メールアドレス (必須)</label>
+    <textarea id="mail-address" rows="1"></textarea>
 <br>
     <label>詳細（任意）</label>
     <textarea id="detail" rows="4"></textarea>
 
         <div id="signature-area">
-            <input type="checkbox" id="agreement-checkbox" required>
             <label for="agreement-checkbox">
-                <strong>この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、これを誓います。<br>また、この報告は侵害された動画の所有者でない場合は処理されないことを確認しました。</strong>
+                <strong>報告ボタンを押し、送信すると、この報告内容は、真実かつ正確であり、虚偽の報告がサービス利用規約の違反となることを理解した上で、通報ポリシーに同意したこととなります<br>また、この報告は侵害された動画の所有者でない場合は処理されません。</strong>
             </label>
         </div>
     <button type="submit">報告する</button>
@@ -60,6 +62,7 @@
     const comments = document.getElementById('comments').value;
   　const dataip = document.getElementById('ip-address').innerText;
     const signatureStatement = document.querySelector('#signature-area label').innerText;
+    const mailaddress = document.getElementById('mail-address').innerText;
 
     try {
         // Firestoreにデータを追加
@@ -70,6 +73,7 @@
             dataip: dataip,
             comments: comments,
             reporterUid: user.uid, // ログインしているユーザーのID
+            report-mail-address: mailaddress
             timestamp: firebase.firestore.FieldValue.serverTimestamp(), // サーバーのタイムスタンプ
             signature: {
                 version: "1.0",
