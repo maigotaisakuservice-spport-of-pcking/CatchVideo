@@ -53,34 +53,21 @@
       .then(data => {
         document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
 
-// フォームの送信イベントを処理
-document.getElementById('reportForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); // デフォルトの送信をキャンセル
-
-    const user = auth.currentUser;
-    if (!user) {
-        alert("報告するにはログインが必要です。");
-        return;
-    }
-
-    if (!document.getElementById('agreement-checkbox').checked) {
-        alert("チェックボックスにチェックを入れてください。");
-        return;
-    }
-
     // フォームからデータを取得
     const reportedVideoId = document.getElementById('video-id').value;
-    const reason = document.getElementById('Videosownerlink').value;
+    const VideoOwnerlink = document.getElementById('Videosownerlink').value;
     const reason = document.getElementById('reason').value;
     const comments = document.getElementById('comments').value;
-  　const comments = document.getElementById('data.ip').innerText;
+  　const dataip = document.getElementById('ip-address').innerText;
     const signatureStatement = document.querySelector('#signature-area label').innerText;
 
     try {
         // Firestoreにデータを追加
         await db.collection('violation_reports').add({
             reportedVideoId: reportedVideoId,
+            VideoOwnerlink: VideoOwnerlink,
             reason: reason,
+            dataip: dataip,
             comments: comments,
             reporterUid: user.uid, // ログインしているユーザーのID
             timestamp: firebase.firestore.FieldValue.serverTimestamp(), // サーバーのタイムスタンプ
