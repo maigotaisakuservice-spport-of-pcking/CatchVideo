@@ -40,6 +40,14 @@
   </form>
 
   <script type="module">
+    
+// ipaddres 取得
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
+
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
     const firebaseConfig = {
@@ -49,13 +57,7 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-// ipaddres 取得
-    fetch('https://api.ipify.org?format=json')
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('ip-address').textContent = `IP アドレス: ${data.ip}`;    
 
-    // フォームからデータを取得
     const reportedVideoId = document.getElementById('video-id').value;
     const VideoOwnerlink = document.getElementById('Videosownerlink').value;
     const reason = document.getElementById('reason').value;
@@ -63,34 +65,12 @@
   　const dataip = document.getElementById('ip-address').innerText;
     const signatureStatement = document.querySelector('#signature-area label').innerText;
     const mailaddress = document.getElementById('mail-address').innerText;
-
-    try {
-        // Firestoreにデータを追加
-        await db.collection('reports').add({
-            reportedVideoId: reportedVideoId,
-            VideoOwnerlink: VideoOwnerlink,
-            reason: reason,
-            dataip: dataip,
-            comments: comments,
-            reporterUid: user.uid, // ログインしているユーザーのID
-            report-mail-address: mailaddress
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(), // サーバーのタイムスタンプ
-            signature: {
-                version: "1.0",
-                agreedToTerms: true,
-                statement: signatureStatement
-            },
-            status: "pending"
-        });
-
-        alert("ご報告ありがとうございました。内容を確認いたします。");
-        document.getElementById('report-form').reset();
-
-    } catch (error) {
-        console.error("報告の送信中にエラーが発生しました:", error);
-        alert("エラーが発生しました。もう一度お試しください。");
-    }
-});
+      await addDoc(collection(db, "reports"), {
+        reportedVideoId, VideoOwnerlink, reason, comments, dataip, signatureStatement, mailaddress, time: serverTimestamp()
+      });
+      alert("報告を送信しました。ご協力ありがとうございます。");
+      location.href = "index.html";
+    });
   </script>
 </body>
 </html>
