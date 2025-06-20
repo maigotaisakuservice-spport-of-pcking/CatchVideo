@@ -63,7 +63,7 @@
 
     try {
         // Firestoreにデータを追加
-        await db.collection('violation_reports').add({
+        await db.collection('reports').add({
             reportedVideoId: reportedVideoId,
             VideoOwnerlink: VideoOwnerlink,
             reason: reason,
